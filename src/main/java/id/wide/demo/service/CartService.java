@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -66,10 +67,15 @@ public class CartService {
 
     @Transactional
     public void addProductToCart(AddProductCartRequest request) throws ProductAvailabilityException {
+        if (Boolean.FALSE.equals(customerService.isCustomerExists(request.getCustomerId()))
+                || Boolean.FALSE.equals(productService.isProductExists(request.getProductId()))) {
+            throw new NoSuchElementException();
+        }
         if (Boolean.FALSE.equals(productService.checkProductAvailability(
                 request.getProductId(), request.getQuantity()))) {
             throw new ProductAvailabilityException();
         }
+
         ProductCart productCart = getProductCart(request.getCustomerId(),request.getProductId()).orElse(new ProductCart());
         if (productCart.getQuantity()==null) {
             productCart.setCustomerId(request.getCustomerId());
