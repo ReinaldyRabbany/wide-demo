@@ -88,4 +88,17 @@ public class GlobalExceptionHandler {
         messageMap.put("error", message);
         return messageMap;
     }
+
+    @ExceptionHandler({
+            ProductAvailabilityException.class
+    })
+    public ResponseEntity<RestResponse> handleProductAvailabilityException(
+            HttpServletRequest req, Exception e) {
+        RestResponse errorResponse = RestResponse.builder()
+                .code("PRODUCT_NOT_AVAILABLE")
+                .message((e.getMessage()!=null) ? e.getMessage()
+                        : "Product is currently not available")
+                .build();
+        return ResponseEntity.ok().body(errorResponse);
+    }
 }
