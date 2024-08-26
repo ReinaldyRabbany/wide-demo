@@ -9,7 +9,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
-public class ProductDTO {
+public class ProductCartDTO {
     @NotNull
     private Long id;
     @NotBlank @Size(max = 100)
@@ -20,4 +20,6 @@ public class ProductDTO {
     private BigDecimal price;
     @NotNull @Min(0)
     private Long quantity;
+    @NotNull @Min(0)
+    private BigDecimal total;
 }

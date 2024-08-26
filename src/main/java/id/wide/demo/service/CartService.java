@@ -1,7 +1,7 @@
 package id.wide.demo.service;
 
 import id.wide.demo.dto.CustomerDTO;
-import id.wide.demo.dto.ProductDTO;
+import id.wide.demo.dto.ProductCartDTO;
 import id.wide.demo.dto.request.AddProductCartRequest;
 import id.wide.demo.dto.response.CartResponse;
 import id.wide.demo.entity.Customer;
@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -49,22 +50,27 @@ public class CartService {
         customerDTO.setAddress(customer.getAddress());
         response.setCustomer(customerDTO);
 
-        Set<ProductDTO> products = new HashSet<>();
+        BigDecimal total = BigDecimal.ZERO;
+        Set<ProductCartDTO> products = new HashSet<>();
         for (ProductCart productCart: productCarts) {
             try {
                 Product product = productService.getProduct(productCart.getProductId());
-                ProductDTO productDTO = new ProductDTO();
-                productDTO.setId(productCart.getProductId());
-                productDTO.setName(product.getName());
-                productDTO.setType(product.getType());
-                productDTO.setPrice(product.getPrice());
-                productDTO.setQuantity(productCart.getQuantity());
-                products.add(productDTO);
+                ProductCartDTO productCartDTO = new ProductCartDTO();
+                productCartDTO.setId(productCart.getProductId());
+                productCartDTO.setName(product.getName());
+                productCartDTO.setType(product.getType());
+                productCartDTO.setPrice(product.getPrice());
+                productCartDTO.setQuantity(productCart.getQuantity());
+                productCartDTO.setTotal(product.getPrice().multiply(BigDecimal.valueOf(productCart.getQuantity())));
+                products.add(productCartDTO);
+
+                total = total.add(productCartDTO.getTotal());
             } catch (Exception e) {
                 log.error("can't fetch product " + productCart.getProductId());
             }
         }
         response.setProducts(products);
+        response.setTotal(total);
         return response;
     }
 
