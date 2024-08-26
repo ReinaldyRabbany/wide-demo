@@ -1,21 +1,25 @@
 package id.wide.demo.service;
 
-import id.wide.demo.dto.request.AddProductCartRequest;
-import id.wide.demo.dto.response.CartResponse;
 import id.wide.demo.dto.CustomerDTO;
 import id.wide.demo.dto.ProductDTO;
-import id.wide.demo.entity.*;
+import id.wide.demo.dto.request.AddProductCartRequest;
+import id.wide.demo.dto.response.CartResponse;
+import id.wide.demo.entity.Customer;
+import id.wide.demo.entity.Product;
+import id.wide.demo.entity.ProductCart;
 import id.wide.demo.exception.ProductAvailabilityException;
 import id.wide.demo.repo.ProductCartRepo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class CartService {
 
@@ -45,22 +49,25 @@ public class CartService {
         customerDTO.setAddress(customer.getAddress());
         response.setCustomer(customerDTO);
 
-        Set<ProductDTO> products = productCarts.stream().map(p -> {
-            ProductDTO productDTO = new ProductDTO();
-            productDTO.setId(p.getProductId());
-            Product product = productService.getProduct(p.getProductId());
-            productDTO.setName(product.getName());
-            productDTO.setType(product.getType());
-            productDTO.setPrice(product.getPrice());
-            productDTO.setQuantity(p.getQuantity());
-            return productDTO;
-        }).collect(Collectors.toSet());
-
+        Set<ProductDTO> products = new HashSet<>();
+        for (ProductCart productCart: productCarts) {
+            try {
+                Product product = productService.getProduct(productCart.getProductId());
+                ProductDTO productDTO = new ProductDTO();
+                productDTO.setId(productCart.getProductId());
+                productDTO.setName(product.getName());
+                productDTO.setType(product.getType());
+                productDTO.setPrice(product.getPrice());
+                productDTO.setQuantity(productCart.getQuantity());
+                products.add(productDTO);
+            } catch (Exception e) {
+                log.error("can't fetch product " + productCart.getProductId());
+            }
+        }
         response.setProducts(products);
         return response;
     }
 
-    @Transactional(readOnly = true)
     private Optional<ProductCart> getProductCart(Long customerId, Long productId) {
         return productCartRepo.findProductCart(customerId, productId);
     }

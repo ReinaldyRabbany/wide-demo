@@ -3,6 +3,7 @@ package id.wide.demo.controller;
 import id.wide.demo.dto.request.CreateProductRequest;
 import id.wide.demo.dto.response.RestResponse;
 import id.wide.demo.dto.request.UpdateProductRequest;
+import id.wide.demo.exception.ProductAvailabilityException;
 import id.wide.demo.service.ProductService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -22,7 +23,7 @@ public class ProductController {
     }
 
     @GetMapping("/{productId}")
-    public ResponseEntity<?> getProductById(@PathVariable long productId) {
+    public ResponseEntity<?> getProductById(@PathVariable long productId) throws ProductAvailabilityException {
         return ResponseEntity.ok(RestResponse.success(productService.getProduct(productId)));
     }
 
@@ -39,13 +40,13 @@ public class ProductController {
     }
 
     @PutMapping
-    public ResponseEntity<?> updateProduct(@Valid @RequestBody UpdateProductRequest request) {
+    public ResponseEntity<?> updateProduct(@Valid @RequestBody UpdateProductRequest request) throws ProductAvailabilityException {
         productService.updateProduct(request);
         return ResponseEntity.ok(RestResponse.success());
     }
 
     @DeleteMapping("/{productId}")
-    public ResponseEntity<?> hardDeleteProduct(@PathVariable long productId) {
+    public ResponseEntity<?> hardDeleteProduct(@PathVariable long productId) throws ProductAvailabilityException {
         productService.deleteProduct(productId);
         return ResponseEntity.ok(RestResponse.success());
     }

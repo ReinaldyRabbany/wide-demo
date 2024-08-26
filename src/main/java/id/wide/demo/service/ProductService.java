@@ -3,6 +3,7 @@ package id.wide.demo.service;
 import id.wide.demo.dto.request.CreateProductRequest;
 import id.wide.demo.dto.request.UpdateProductRequest;
 import id.wide.demo.entity.Product;
+import id.wide.demo.exception.ProductAvailabilityException;
 import id.wide.demo.repo.ProductRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -25,8 +26,8 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public Product getProduct(long productId) {
-        return productRepo.findById(productId).orElseThrow();
+    public Product getProduct(long productId) throws ProductAvailabilityException {
+        return productRepo.findById(productId).orElseThrow(ProductAvailabilityException::new);
     }
 
     @Transactional(readOnly = true)
@@ -45,7 +46,7 @@ public class ProductService {
     }
 
     @Transactional
-    public void updateProduct(UpdateProductRequest request) {
+    public void updateProduct(UpdateProductRequest request) throws ProductAvailabilityException {
         Product product = getProduct(request.getId());
         product.setName(request.getName());
         product.setType(request.getType());
@@ -55,7 +56,7 @@ public class ProductService {
     }
 
     @Transactional
-    public void deleteProduct(long id) {
+    public void deleteProduct(long id) throws ProductAvailabilityException {
         productRepo.delete(getProduct(id));
     }
 

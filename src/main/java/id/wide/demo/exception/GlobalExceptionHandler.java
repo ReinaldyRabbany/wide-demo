@@ -97,7 +97,7 @@ public class GlobalExceptionHandler {
         RestResponse errorResponse = RestResponse.builder()
                 .code("PRODUCT_NOT_AVAILABLE")
                 .message((e.getMessage()!=null) ? e.getMessage()
-                        : "Product is currently not available")
+                        : "Product does not exists or currently not available")
                 .build();
         return ResponseEntity.ok().body(errorResponse);
     }
