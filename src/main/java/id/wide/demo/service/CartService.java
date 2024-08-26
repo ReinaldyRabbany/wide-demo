@@ -15,10 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -97,5 +94,15 @@ public class CartService {
         } else
             productCart.setQuantity(productCart.getQuantity() + request.getQuantity());
         productCartRepo.save(productCart);
+    }
+
+    @Transactional
+    public void removeProductOnCart(Long customerId, Set<Long> productIds) {
+        Set<ProductCart> productCarts = new HashSet<>();
+        for (Long productId : productIds) {
+            Optional<ProductCart> productCartOpt = getProductCart(customerId, productId);
+            productCartOpt.ifPresent(productCarts::add);
+        }
+        productCartRepo.deleteAll(productCarts);
     }
 }

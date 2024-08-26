@@ -9,15 +9,11 @@ import id.wide.demo.exception.ProductAvailabilityException;
 import id.wide.demo.repo.OrderItemRepo;
 import id.wide.demo.repo.OrderRepo;
 import jakarta.persistence.EntityNotFoundException;
-import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class OrderService {
@@ -27,14 +23,16 @@ public class OrderService {
 
     private final CustomerService customerService;
     private final ProductService productService;
+    private final CartService cartService;
 
     @Autowired
     public OrderService(OrderRepo orderRepo, OrderItemRepo orderItemRepo,
-                        CustomerService customerService, ProductService productService) {
+                        CustomerService customerService, ProductService productService, CartService cartService) {
         this.orderRepo = orderRepo;
         this.orderItemRepo = orderItemRepo;
         this.customerService = customerService;
         this.productService = productService;
+        this.cartService = cartService;
     }
 
     @Transactional(readOnly = true)
@@ -68,6 +66,7 @@ public class OrderService {
         order.setTotal(request.getTotal());
         order.setCreatedDate(new Date());
 
+        Set<Long> productIds = new HashSet<>();
         for (OrderItemDTO itemDTO: request.getItems()) {
             OrderItem item = new OrderItem();
             Product product = productService.getProduct(itemDTO.getProductId());
@@ -85,9 +84,11 @@ public class OrderService {
             order.addItem(item);
 
             product.setQuantity(product.getQuantity() - itemDTO.getQuantity());
+            productIds.add(itemDTO.getProductId());
         }
 
-        orderRepo.save(order);
         orderItemRepo.saveAll(order.getItems());
+        orderRepo.save(order);
+        cartService.removeProductOnCart(request.getCustomerId(), productIds);
     }
 }

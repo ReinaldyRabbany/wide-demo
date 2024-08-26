@@ -3,6 +3,7 @@ package id.wide.demo.exception;
 import id.wide.demo.dto.response.RestResponse;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import javax.net.ssl.SSLHandshakeException;
 import java.util.*;
 
+@Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -29,6 +31,8 @@ public class GlobalExceptionHandler {
             SSLHandshakeException.class,
     })
     public ResponseEntity<RestResponse> defaultErrorHandler(HttpServletRequest req, Exception e) {
+        log.error(e.getMessage(), e);
+
         RestResponse errorResponse = RestResponse.builder()
                 .code(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()))
                 .message(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
@@ -42,6 +46,8 @@ public class GlobalExceptionHandler {
             EntityNotFoundException.class
     })
     public ResponseEntity<RestResponse> dataNotFound(HttpServletRequest req, Exception e) {
+        log.error(e.getMessage(), e);
+
         RestResponse errorResponse = RestResponse.builder()
                 .code(String.valueOf(HttpStatus.NOT_FOUND.value()))
                 .message(HttpStatus.NOT_FOUND.getReasonPhrase())
